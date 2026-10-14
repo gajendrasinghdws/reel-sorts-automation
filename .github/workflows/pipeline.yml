@@ -24,9 +24,12 @@ jobs:
           pip install -r automation/requirements.txt
 
       - name: Create Cookies File
-        if: "${{ secrets.INSTAGRAM_COOKIES != '' }}"
+        env:
+          INSTA_COOKIES: ${{ secrets.INSTAGRAM_COOKIES }}
         run: |
-          echo "${{ secrets.INSTAGRAM_COOKIES }}" > automation/cookies.txt
+          if [ -n "$INSTA_COOKIES" ]; then
+            echo "$INSTA_COOKIES" > automation/cookies.txt
+          fi
 
       - name: Run Automation Pipeline
         env:
