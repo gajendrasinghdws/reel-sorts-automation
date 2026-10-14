@@ -23,15 +23,15 @@ def reel_url(url_or_username: str) -> str:
     value = url_or_username.strip()
     if value.startswith("http://") or value.startswith("https://"):
         return value
-    # Reels tab ka direct URL use karein profile ke bajay
-    return f"https://www.instagram.com/{normalize_username(value)}/reels/"
+    # yt-dlp standard Instagram profile URL expect karta hai
+    return f"https://www.instagram.com/{normalize_username(value)}/"
 
 def discover_latest(url_or_username: str):
     target = reel_url(url_or_username)
     opts = {
         "quiet": True,
         "no_warnings": True,
-        "extract_flat": True,
+        "extract_flat": False,
         "playlistend": 5,
         "http_headers": {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
@@ -52,10 +52,7 @@ def discover_latest(url_or_username: str):
         if valid_entries:
             info = valid_entries[0]
 
-    webpage_url = info.get("webpage_url") or info.get("url") or target
-    if webpage_url and not webpage_url.startswith("http"):
-        webpage_url = f"https://www.instagram.com/reel/{webpage_url}/"
-
+    webpage_url = info.get("webpage_url") or info.get("original_url") or info.get("url") or target
     media_id = str(info.get("id") or webpage_url)
     caption = info.get("description") or info.get("title") or ""
     return {
