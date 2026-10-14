@@ -1,6 +1,21 @@
+import os
 from pathlib import Path
 import re
 import yt_dlp
+
+def get_cookie_file() -> str | None:
+    """
+    Agar cookies.txt file maujood hai toh uska path return karega.
+    """
+    possible_paths = [
+        Path("automation/cookies.txt"),
+        Path("cookies.txt"),
+        Path(__file__).resolve().parent / "cookies.txt",
+    ]
+    for p in possible_paths:
+        if p.exists() and p.is_file():
+            return str(p)
+    return None
 
 def normalize_username(username: str) -> str:
     value = username.strip()
@@ -17,9 +32,6 @@ def reel_url(url_or_username: str) -> str:
 def discover_latest(url_or_username: str):
     """
     Returns a dict for the latest extractable Instagram item.
-
-    Instagram extraction is inherently subject to platform changes.
-    We keep this isolated so it can be replaced by an authorized API adapter.
     """
     target = reel_url(url_or_username)
     opts = {
@@ -29,6 +41,10 @@ def discover_latest(url_or_username: str):
         "playlistend": 1,
         "noplaylist": False,
     }
+
+    cookie_path = get_cookie_file()
+    if cookie_path:
+        opts["cookiefile"] = cookie_path
 
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(target, download=False)
@@ -59,6 +75,11 @@ def download(url: str, out_dir: str) -> tuple[Path, dict]:
         "quiet": True,
         "no_warnings": True,
     }
+
+    cookie_path = get_cookie_file()
+    if cookie_path:
+        opts["cookiefile"] = cookie_path
+
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=True)
         path = Path(ydl.prepare_filename(info))
