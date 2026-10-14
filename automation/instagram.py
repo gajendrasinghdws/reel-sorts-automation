@@ -1,19 +1,15 @@
 import os
 from pathlib import Path
-import re
 import yt_dlp
 
 def get_cookie_file() -> str | None:
-    """
-    Agar cookies.txt file maujood hai toh uska path return karega.
-    """
     possible_paths = [
         Path("automation/cookies.txt"),
         Path("cookies.txt"),
         Path(__file__).resolve().parent / "cookies.txt",
     ]
     for p in possible_paths:
-        if p.exists() and p.is_file():
+        if p.exists() and p.is_file() and p.stat().st_size > 0:
             return str(p)
     return None
 
@@ -30,9 +26,6 @@ def reel_url(url_or_username: str) -> str:
     return f"https://www.instagram.com/{normalize_username(value)}/"
 
 def discover_latest(url_or_username: str):
-    """
-    Returns a dict for the latest extractable Instagram item.
-    """
     target = reel_url(url_or_username)
     opts = {
         "quiet": True,
